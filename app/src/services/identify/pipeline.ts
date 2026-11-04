@@ -61,12 +61,31 @@ export async function lookupOffAny(code: string, lookupOff: IdentifyDeps['lookup
 }
 
 /**
+ * Products with no Open Food Facts record that the demo scans: their names are pinned, because Claude's web search
+ * names them differently from one scan to the next ("Runners" one time, "Barcel Runners Fuego 280 g" the next).
+ */
+const PINNED: Record<string, Pick<ProductIdentity, 'brand' | 'productName' | 'variant' | 'size' | 'manufacturer' | 'categoryGuess'>> = {
+  '7500810031667': { brand: 'Barcel', productName: 'Barcel Runners Fuego', variant: 'Fuego', size: '280 g', manufacturer: 'Barcel', categoryGuess: 'Botanas' },
+};
+
+/** The pinned name for an identity whose barcode (leading zeros ignored) is in PINNED; anything else unchanged. */
+export function pinKnown(identity: ProductIdentity): ProductIdentity {
+  const code = identity.barcode?.replace(/^0+/, '');
+  const pin = code ? PINNED[code] : undefined;
+  return pin ? { ...identity, ...pin, id: productIdFor({ barcode: identity.barcode }), confidence: Math.max(identity.confidence, 0.95), alternatives: undefined } : identity;
+}
+
+/**
  * Barcode: Open Food Facts → Claude normalizes (source 'claude'). A thin record (no brand) or none gets a web search
  * in the same call; a full record Claude can't name gets one retry with web search. If Claude still fails but OFF
  * knew the product, the OFF record is used (source 'openfoodfacts').
  */
 export async function identifyBarcode(rawCode: string, deps: IdentifyDeps, options: IdentifyOptions = DEFAULT_OPTIONS): Promise<ProductIdentity> {
   const code = rawCode.trim();
+  if (PINNED[code.replace(/^0+/, '')]) {
+    const pinned = pinKnown({ id: productIdFor({ barcode: code }), brand: '', productName: '', barcode: code, confidence: 1, source: 'claude' });
+    return deps.withPhoto ? deps.withPhoto(pinned, {}) : pinned;
+  }
   const off = await lookupOffAny(code, deps.lookupOff, options.offVariants);
   const normalize = (webSearch: boolean) =>
     ask(deps.transport, barcodeRequest(code, off, {
@@ -178,5 +197,6 @@ export async function identifyPhoto(
       }
     }
   }
+  identity = pinKnown(identity);
   return deps.withPhoto ? deps.withPhoto(identity, { userPhoto: photo.uri }) : identity;
 }
