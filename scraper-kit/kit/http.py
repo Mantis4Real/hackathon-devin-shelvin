@@ -37,6 +37,10 @@ class RateLimited(Refused):
     """The site answered 429: the run stops too, but asking again later is fine (not a refusal of us)."""
 
 
+class NotListed(ValueError):
+    """The store answered, but it has no such product (delisted or never sold): the page is fine, the product is gone."""
+
+
 def utc():
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 

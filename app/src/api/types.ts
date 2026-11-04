@@ -507,7 +507,8 @@ export type FetchFailureCode =
   | 'rate_limited'
   | 'unreachable'
   | 'parse_failed'
-  | 'not_in_catalog';
+  | 'not_in_catalog'
+  | 'not_listed';
 
 export interface ScrapeFailure {
   pageId: string;

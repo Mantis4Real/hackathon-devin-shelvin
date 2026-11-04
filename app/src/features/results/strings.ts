@@ -26,6 +26,7 @@ export const strings = {
     unreachable: "Couldn't load the page",
     parse_failed: "The page loaded, but the scraper couldn't read it",
     not_in_catalog: "The product isn't in this site's catalog",
+    not_listed: 'The store no longer sells this product',
   } satisfies Record<FetchFailureCode, string>,
   // Brand catalog (a first-party site read whole)
   catalogTitle: (retailer: string, n: number) => `Brand catalog · ${retailer} · ${n}`,

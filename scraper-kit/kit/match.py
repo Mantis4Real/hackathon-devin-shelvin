@@ -2,7 +2,8 @@
 
 A barcode that matches (as a 14-digit GTIN) is an exact match. Otherwise the words of brand, name and variant
 are compared with the row's title and brand, and a stated size that differs (62 g against 150 g) rules the row
-out. The score is 0..1; `matches` keeps rows at or above `threshold`, best first.
+out. Words in parentheses are an aside the page may leave out ("Freshmint (Menta Fresca)"): the better of the scores
+with and without them counts. The score is 0..1; `matches` keeps rows at or above `threshold`, best first.
 """
 import re
 import unicodedata
@@ -55,10 +56,20 @@ def same_gtin(a, b):
     return False
 
 
+ASIDE = re.compile(r"\([^)]*\)")
+
+
 def score(product, row):
     if same_gtin(product.get("barcode"), row.get("barcode")):
         return 1.0
-    wanted = words(" ".join(filter(None, (product.get("brand"), product.get("productName"), product.get("variant")))))
+    named = " ".join(filter(None, (product.get("brand"), product.get("productName"), product.get("variant"))))
+    if ASIDE.search(named):
+        return max(_score(product, row, named), _score(product, row, ASIDE.sub(" ", named)))
+    return _score(product, row, named)
+
+
+def _score(product, row, named):
+    wanted = words(named)
     have = words(" ".join(filter(None, (row.get("brand"), row.get("title")))))
     if not wanted or not have:
         return 0.0

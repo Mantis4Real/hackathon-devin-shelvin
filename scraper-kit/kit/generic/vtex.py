@@ -12,6 +12,7 @@ import json
 from urllib.parse import quote, urlsplit
 
 from .. import rows as kit_rows
+from ..http import NotListed
 
 API = "/api/catalog_system/pub/products/search"
 PAGE = 50
@@ -75,7 +76,8 @@ def bind(origin, currency):
     def page(response):
         products = _products(response)
         if not products:
-            raise ValueError(f"the store returned no product for {response['url']}")
+            # A delisted product's page still loads (an empty shell); the catalog API is what says it is gone.
+            raise NotListed(f"the store no longer lists this product ({response['url']})")
         return [r for p in products for r in to_rows(origin, p, currency)]
 
     return page_request, page

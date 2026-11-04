@@ -18,7 +18,7 @@ def main(argv=None):
     kit_dir, source, url = (argv or sys.argv[1:])[:3]
     sys.path.insert(0, kit_dir)
     from kit import capture
-    from kit.http import RateLimited, Refused
+    from kit.http import NotListed, RateLimited, Refused
     from kit.source import check_source, on_origin
     try:
         if not re.fullmatch(r"[a-z][a-z0-9_]*", source):
@@ -36,6 +36,8 @@ def main(argv=None):
         out = {"error": str(exc)[:300], "kind": "blocked"}
     except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
         out = {"error": str(exc)[:300], "kind": "unreachable"}
+    except NotListed as exc:
+        out = {"error": str(exc)[:300], "kind": "not_listed"}
     except Exception as exc:   # anything in the source's code is that scraper's failure
         out = {"error": f"{type(exc).__name__}: {exc}"[:300], "kind": "parse_failed"}
     sys.stdout.reconfigure(encoding="utf-8")

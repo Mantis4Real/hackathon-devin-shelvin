@@ -137,7 +137,8 @@ class Scrape:
         if "error" in got:
             text = {"blocked": f"The site stopped us: {got['error']}",
                     "rate_limited": f"{page['domain']} asked us to slow down; try again later",
-                    "unreachable": f"Could not reach {page['domain']}: {got['error']}"}.get(
+                    "unreachable": f"Could not reach {page['domain']}: {got['error']}",
+                    "not_listed": f"{page['retailerName']} no longer sells this product"}.get(
                 got["kind"], f"The scraper could not read the page: {got['error']}")
             state("blocked" if got["kind"] == "blocked" else "failed", text[:200])
             return {"error": text[:300], "code": got["kind"]}
@@ -179,6 +180,8 @@ class Scrape:
             return {"error": str(exc), "kind": "blocked"}
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             return {"error": str(exc), "kind": "unreachable"}
+        except self.kit.http.NotListed as exc:
+            return {"error": str(exc), "kind": "not_listed"}
         except ValueError as exc:
             return {"error": str(exc), "kind": "parse_failed"}
         return {"catalog": catalog, "rows": rows}

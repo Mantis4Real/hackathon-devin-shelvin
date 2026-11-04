@@ -82,7 +82,7 @@ class Kit:
 
     def collect(self, source, url, timeout=300):
         """Run `source` on `url` (its page, or a first-party catalog) in a child process with no credentials.
-        Returns {"catalog", "rows"} or {"error", "kind"} with kind blocked | rate_limited | unreachable | parse_failed."""
+        Returns {"catalog", "rows"} or {"error", "kind"} with kind blocked | rate_limited | unreachable | not_listed | parse_failed."""
         command = [sys.executable, "-m", "server.collect", str(self.dir), source.SOURCE, url]
         try:
             done = subprocess.run(command, cwd=Path(__file__).resolve().parents[1], capture_output=True,

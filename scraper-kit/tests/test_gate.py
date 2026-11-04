@@ -66,6 +66,14 @@ def test_vtex_reads_one_product_through_the_store_json():
     assert capture.replay(saved, module) == rows
 
 
+def test_vtex_a_delisted_product_is_not_listed_not_a_broken_scraper():
+    # Chedraui delisted Takis Fuego 56 g: its page still loads, the catalog API answers [].
+    module = vtex_source()
+    api = f"{O}/api/catalog_system/pub/products/search/botana-barcel-takis-fuego-56g-3090610/p"
+    with pytest.raises(http.NotListed):
+        capture.collect_page(module, module.SAMPLE_PAGE, fetch=FakeFetch({api: (200, "[]")}))
+
+
 def test_jsonapi_pages_through_next_links_with_brands_and_images():
     seeds, discover, _, listings, _ = jsonapi.bind(O, "productos", "field_marca")
     first = {"data": [{"attributes": {"drupal_internal__nid": 29, "title": "Takis Fuego", "path": {"alias": None}},

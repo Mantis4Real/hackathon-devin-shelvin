@@ -8,7 +8,7 @@ from server.kit import Kit
 PROBE = '''"""A source that reports what it can see of the environment."""
 import os
 
-from kit import rows
+from kit import http, rows
 
 SOURCE = "probe_mx"
 ORIGIN = "http://127.0.0.1:{port}"
@@ -20,6 +20,8 @@ SAMPLE_PAGE = ORIGIN + "/p/1"
 
 
 def page(response):
+    if response["url"].endswith("/p/gone"):
+        raise http.NotListed("the store no longer lists this product")
     seen = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("DEVIN_API_KEY") or "no key"
     return [rows.row("1", response["url"], title=seen, price={{"amount": 12.5, "currency": "MXN"}})]
 '''
@@ -60,5 +62,7 @@ def test_routing_reads_text_and_the_scrape_child_gets_no_keys(kit_copy, monkeypa
         assert "sources.probe_mx" not in sys.modules
         # 429 is "slow down", not a refusal: retryable, never the permanent `blocked`.
         assert kit.collect(found, f"http://127.0.0.1:{port}/p/slow")["kind"] == "rate_limited"
+        # A delisted product is the store's answer, not a scraper that can't read the page.
+        assert kit.collect(found, f"http://127.0.0.1:{port}/p/gone")["kind"] == "not_listed"
     finally:
         site.shutdown()

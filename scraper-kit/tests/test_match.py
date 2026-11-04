@@ -31,3 +31,16 @@ def test_size_parsing():
     assert match.size("Doritos 1.5 kg") == 1500.0
     assert match.size("62g") == 62.0
     assert match.size("sin tamaño") is None
+
+
+def test_a_parenthesised_aside_the_page_leaves_out_does_not_sink_the_match():
+    # Chedraui's Trident page: the scan named the variant "Freshmint (Menta Fresca)", the page only "Freshmint".
+    product = {"brand": "Trident", "productName": "Trident Freshmint", "variant": "Freshmint (Menta Fresca)", "size": "30.6 g"}
+    row = {"brand": "Trident", "title": "Goma de Mascar Sin Azúcar Trident Val-U-Pack 18s Freshmint"}
+    assert match.score(product, row) >= 0.6
+    # A page that does say the aside still matches; another flavor still doesn't.
+    assert match.score(product, {"brand": "Trident", "title": "Chicle Trident Menta Fresca"}) >= 0.6
+    assert match.score(product, {"brand": "Trident", "title": "Goma de Mascar Trident Sandía 18s"}) < 0.6
+    # Runners on Chedraui (no barcode on the scan, brand on the shelf tag is "Runners").
+    runners = {"brand": "Barcel", "productName": "Barcel Runners Fuego", "variant": "Fuego", "size": "280 g"}
+    assert match.score(runners, {"brand": "Runners", "title": "Botana Barcel Runners Fuego 280g"}) >= 0.6

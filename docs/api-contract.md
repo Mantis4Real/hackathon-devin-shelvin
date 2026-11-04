@@ -157,6 +157,7 @@ retry) or **Couldn't fetch** (try again). A code it doesn't know is shown with i
 | `unreachable` | `failures` | the page couldn't be loaded (timeout, network) | Couldn't fetch |
 | `parse_failed` | `failures` | the page loaded but the scraper couldn't read it | Couldn't fetch |
 | `not_in_catalog` | `failures` | a brand site's catalog doesn't have the product | Couldn't fetch |
+| `not_listed` | `failures` | the store's page loads, but its catalog no longer lists the product (delisted) | Couldn't fetch |
 | `allowed`, `no_robots` | `access` | allowed (robots.txt allows, or there is none) | — |
 
 ### SimilarProduct
