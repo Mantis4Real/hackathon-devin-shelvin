@@ -148,6 +148,14 @@ test('groupByProduct: without pages, the title decides (accents and case ignored
   assert.deepEqual(groupByProduct([], 'X'), []);
 });
 
+test('groupByProduct: title words in any order count, another size does not', () => {
+  const l = (id: string, title?: string) => ({ id, pageId: id, url: '', domain: '', retailerName: '', title, fields: {}, scrapedAt: '' });
+  const nachos = groupByProduct([l('1', 'Nachos De Queso Y Chile Sabritas Doritos 146g'), l('2', 'Doritos Nachos 340 g')], 'Doritos Nachos', [], [], '146 g');
+  assert.deepEqual(nachos.map((g) => [g.key, g.listings.map((x) => x.id)]), [['same', ['1']], ['other', ['2']]]);
+  const incognita = groupByProduct([l('1', 'Botana Sabritas Doritos ADN Incógnita 245g')], 'Doritos Incógnita', [], [], '56 g');
+  assert.deepEqual(incognita.map((g) => g.key), ['other']);
+});
+
 test('parseNetSize: a comma before exactly three digits groups thousands, otherwise it is a decimal', () => {
   assert.deepEqual(parseNetSize('1,000 g'), { amount: 1000, unit: 'g' });
   assert.deepEqual(parseNetSize('2,500 ml'), { amount: 2500, unit: 'ml' });

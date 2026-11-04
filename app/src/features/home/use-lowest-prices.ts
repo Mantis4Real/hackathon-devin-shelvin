@@ -27,7 +27,7 @@ export function useLowestPrices(scans: ScanSummary[]) {
         .getProductListings(id)
         .then(({ product, listings }) => {
           // Only this product's own listings: similar products are saved alongside it.
-          const same = groupByProduct(listings, product.productName).find((g) => g.key === 'same')?.listings ?? [];
+          const same = groupByProduct(listings, product.productName, [], [], product.size).find((g) => g.key === 'same')?.listings ?? [];
           const { lowestId, lowest: amount } = comparePrices(same);
           const listing = listings.find((l) => l.id === lowestId);
           const value = listing && amount !== undefined ? { amount, currency: listing.price!.currency, store: storeAbbreviation(retailerLabel(listing.retailerName).name) } : null;

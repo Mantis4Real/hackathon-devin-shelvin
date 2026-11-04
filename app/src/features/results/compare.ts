@@ -192,15 +192,24 @@ function plain(text: string) {
 /**
  * Splits a product's listings so prices are only compared within one product: the scanned product first, then each
  * similar product (in `similar` order), then anything unknown. The search's pages decide when the app has them;
- * otherwise a listing whose title contains the product name counts as the same product.
+ * otherwise a listing whose title has every word of the product name, in any order, counts as the same product,
+ * unless `productSize` is given and the title names another size ("Doritos 146g" is not "Doritos 56 g").
  */
 export function groupByProduct(
   listings: readonly Listing[],
   productName: string,
   pages: readonly Pick<SourcePage, 'id' | 'matchType' | 'similarProductId'>[] = [],
   similar: readonly Pick<SimilarProduct, 'id' | 'productName'>[] = [],
+  productSize?: string,
 ): ListingGroup[] {
-  const name = plain(productName);
+  const words = plain(productName).split(' ').filter(Boolean);
+  const size = parseNetSize(productSize);
+  const sameByTitle = (title: string) => {
+    const have = new Set(plain(title).split(' '));
+    if (!words.length || !words.every((w) => have.has(w))) return false;
+    const titled = parseNetSize(title);
+    return !(size && titled && (titled.unit !== size.unit || Math.abs(titled.amount - size.amount) > 0.5));
+  };
   const same: Listing[] = [];
   const bySimilar = new Map<string, Listing[]>();
   const other: Listing[] = [];
@@ -210,7 +219,7 @@ export function groupByProduct(
       if (page.matchType === 'exact') same.push(listing);
       else if (page.similarProductId) bySimilar.set(page.similarProductId, [...(bySimilar.get(page.similarProductId) ?? []), listing]);
       else other.push(listing);
-    } else if (name && plain(listing.title ?? '').includes(name)) {
+    } else if (sameByTitle(listing.title ?? '')) {
       same.push(listing);
     } else {
       other.push(listing);

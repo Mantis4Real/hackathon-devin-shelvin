@@ -78,7 +78,7 @@ export function ListingTables({
   empty: { title: string; message: string };
   onOpen: (listing: Listing) => void;
 }) {
-  const groups = groupByProduct(listings, product.productName, pages, similar);
+  const groups = groupByProduct(listings, product.productName, pages, similar, product.size);
   if (groups.length === 0) {
     return (
       <View>
