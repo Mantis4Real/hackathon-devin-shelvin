@@ -1,0 +1,16 @@
+{
+ "rows": 1,
+ "spot": [
+  {
+   "native_id": "/ip/goma-de-mascar-trident-sin-azucar-sabor-a-menta-fresca-18-pzas/00750610560607",
+   "title": "Goma de mascar Trident sin azúcar sabor a menta fresca 18 pzas",
+   "price": {
+    "amount": 26.0,
+    "currency": "MXN"
+   },
+   "brand": "Trident",
+   "sku": "00750610560607"
+  }
+ ],
+ "written_by": "devin 3c252010237b49d48003a49346a00745: read from capture bodies"
+}
