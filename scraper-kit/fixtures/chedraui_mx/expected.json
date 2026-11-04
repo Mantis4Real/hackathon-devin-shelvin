@@ -1,0 +1,16 @@
+{
+ "rows": 1,
+ "spot": [
+  {
+   "native_id": "3094137",
+   "title": "Refresco Dr Pepper Regular 600ml",
+   "price": {
+    "amount": 18.5,
+    "currency": "MXN"
+   },
+   "brand": "Dr Pepper",
+   "barcode": "750119835041"
+  }
+ ],
+ "written_by": "devin 419a25308072408eb844cb68bbcb5199: read from capture bodies"
+}
