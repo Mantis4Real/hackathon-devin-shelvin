@@ -67,14 +67,14 @@ export function RecentScans({ scans, loading, error, onRetry }: RecentScansProps
   );
 }
 
-function RecentScanRow({ scan, lowest }: { scan: ScanSummary; lowest?: { amount: number; store: string } | null }) {
+function RecentScanRow({ scan, lowest }: { scan: ScanSummary; lowest?: { amount: number; store: string; otherSize?: string } | null }) {
   const { product } = scan;
   const name = [product.productName, product.size].filter(Boolean).join(' ');
   const when = scan.lastScrapedAt ? formatLastScraped(scan.lastScrapedAt) : s.neverScraped;
   const meta = [product.brand, when].filter(Boolean).join(' · ');
   return (
     <Row
-      accessibilityLabel={`${name}, ${s.listingCount(scan.listingCount)}${lowest ? `, ${s.lowestA11y(formatAmount(lowest.amount), lowest.store)}` : ''}`}
+      accessibilityLabel={`${name}, ${s.listingCount(scan.listingCount)}${lowest ? `, ${s.lowestA11y(formatAmount(lowest.amount), lowest.store)}${lowest?.otherSize ? ` ${lowest.otherSize}` : ''}` : ''}`}
       onPress={() => router.push({ pathname: '/product/[id]', params: { id: product.id } })}>
       <Cell>
         <Text variant="subheading" numberOfLines={2}>
@@ -94,7 +94,7 @@ function RecentScanRow({ scan, lowest }: { scan: ScanSummary; lowest?: { amount:
           <>
             <Text variant="number">{formatAmount(lowest.amount)}</Text>
             <Text variant="mono" color="secondary" style={styles.store}>
-              {lowest.store}
+              {lowest.otherSize ? s.lowestOtherSize(lowest.store, lowest.otherSize) : lowest.store}
             </Text>
           </>
         ) : (

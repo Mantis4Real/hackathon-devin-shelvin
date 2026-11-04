@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 
 import { getApi } from '@/api/client';
 import type { ScanSummary } from '@/api/types';
-import { comparePrices, groupByProduct, storeAbbreviation } from '@/features/results/compare';
+import { comparePrices, groupByProduct, listingNetSize, parseNetSize, storeAbbreviation } from '@/features/results/compare';
 import { retailerLabel } from '@/features/results/retailer';
 
 export interface Lowest {
   amount: number;
   currency: string;
   store: string;
+  /** Set when no listing has the scanned size: the size of the bag this price is for, e.g. "245g". */
+  otherSize?: string;
 }
 
 /**
@@ -28,9 +30,18 @@ export function useLowestPrices(scans: ScanSummary[]) {
         .then(({ product, listings }) => {
           // Only this product's own listings: similar products are saved alongside it.
           const same = groupByProduct(listings, product.productName, [], [], product.size).find((g) => g.key === 'same')?.listings ?? [];
-          const { lowestId, lowest: amount } = comparePrices(same);
+          // No listing of the scanned size: show the cheapest saved one anyway, labelled with its own size.
+          let { lowestId, lowest: amount } = comparePrices(same);
+          let otherSize: string | undefined;
+          if (lowestId === undefined) {
+            ({ lowestId, lowest: amount } = comparePrices(listings));
+            const other = listings.find((l) => l.id === lowestId);
+            const size = other && (listingNetSize(other) ?? parseNetSize(other.title));
+            const scanned = parseNetSize(product.size);
+            if (size && !(scanned && scanned.unit === size.unit && Math.abs(scanned.amount - size.amount) <= 0.5)) otherSize = `${Math.round(size.amount)}${size.unit}`;
+          }
           const listing = listings.find((l) => l.id === lowestId);
-          const value = listing && amount !== undefined ? { amount, currency: listing.price!.currency, store: storeAbbreviation(retailerLabel(listing.retailerName).name) } : null;
+          const value = listing && amount !== undefined ? { amount, currency: listing.price!.currency, store: storeAbbreviation(retailerLabel(listing.retailerName).name), otherSize } : null;
           if (!cancelled) setLowest((prev) => ({ ...prev, [id]: value }));
         })
         .catch(() => {

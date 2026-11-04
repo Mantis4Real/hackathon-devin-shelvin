@@ -29,6 +29,7 @@ export const homeStrings = {
   listingsColumn: 'Lst',
   lowestColumn: 'Lowest',
   noPrice: '—',
+  lowestOtherSize: (store: string, size: string) => `${store} ${size}`,
   lowestA11y: (price: string, store: string) => `lowest ${price} at ${store}`,
   productsTotal: (n: number) => (n === 1 ? '1 PRODUCT' : `${n} PRODUCTS`),
   listingsTotal: (n: number) => (n === 1 ? '1 LISTING' : `${n} LISTINGS`),
